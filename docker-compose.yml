@@ -43,6 +43,21 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  stockfish-worker:
+    build:
+      context: .
+      dockerfile: services/stockfish_worker/Dockerfile
+    container_name: chess_analytics_stockfish_worker
+    env_file:
+      - .env
+    environment:
+      STOCKFISH_DEPTH: ${STOCKFISH_DEPTH:-14}
+      STOCKFISH_POLL_SECONDS: ${STOCKFISH_POLL_SECONDS:-10}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
   frontend:
     build:
       context: ./frontend
