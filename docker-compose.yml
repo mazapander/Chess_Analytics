@@ -15,16 +15,44 @@ services:
       retries: 10
     restart: unless-stopped
 
-  api:
-    build: .
-    container_name: chess_analytics_api
+  ingestion-api:
+    build:
+      context: .
+      dockerfile: services/ingestion_api/Dockerfile
+    container_name: chess_analytics_ingestion_api
     env_file:
       - .env
     ports:
-      - "8000:8000"
+      - "8001:8000"
     depends_on:
       postgres:
         condition: service_healthy
+    restart: unless-stopped
+
+  analytics-api:
+    build:
+      context: .
+      dockerfile: services/analytics_api/Dockerfile
+    container_name: chess_analytics_analytics_api
+    env_file:
+      - .env
+    ports:
+      - "8002:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: chess_analytics_frontend
+    environment:
+      VITE_ANALYTICS_API_URL: http://localhost:8002
+    ports:
+      - "5173:5173"
+    depends_on:
+      - analytics-api
     restart: unless-stopped
 
 volumes:
